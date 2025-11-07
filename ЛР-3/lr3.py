@@ -1,20 +1,41 @@
-def gen_bin_tree(height=3, root=11):
-    if height == 0:
+from typing import Callable, Dict, Optional
+
+def gen_bin_tree(
+        height: int = 3, 
+        root: float = 11,
+        left_val: Callable = lambda x: x**2,
+        right_val: Callable = lambda x: 2 + x ** 2
+) -> Optional[Dict]:
+    
+    if height < 0:
         return None
-    left_leaf = root ** 2
-    right_leaf = 2 + root ** 2
-    return {
-        'value': root,
-        'left': gen_bin_tree(height - 1, left_leaf),
-        'right': gen_bin_tree(height - 1, right_leaf)
+    
+    tree = {
+        'root': root,
+        'left': None,
+        'right': None
     }
 
-def print_tree(tree, additional=0):
-    if tree is None:
-        return None
-    print_tree(tree['right'], additional + 4)
-    print(' ' * additional + f"{tree['value']}")
-    print_tree(tree['left'], additional + 4)
+    if height > 0:
+        left_value = left_val(root)
+        right_value = right_val(root)
+        tree['left'] = gen_bin_tree(height - 1, left_value, left_val, right_val)
+        tree['right'] = gen_bin_tree(height - 1, right_value, left_val, right_val)
 
-tree = gen_bin_tree()
-print_tree(tree)
+    return tree
+
+
+def print_tree(tree, indent: int = 0):
+    """Рекурсивный вывод бинарного дерева в консоль."""
+    if tree is None:
+        return
+
+    print(" " * indent + f"├── {tree['root']}")
+    if tree['left'] is not None or tree['right'] is not None:
+        print_tree(tree['left'], indent + 4)
+        print_tree(tree['right'], indent + 4)
+
+
+if __name__ == "__main__":
+    tree = gen_bin_tree()
+    print_tree(tree)
