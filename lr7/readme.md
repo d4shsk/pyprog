@@ -1,103 +1,220 @@
-# Лабораторная работа № 3
+# Лабораторная работа №7
 
-## Формулировка задания
-Разработайте программу на языке Python, которая будет строить бинарное дерево (дерево, в каждом узле которого может быть только два потомка). Отображение результата в виде словаря (как базовый вариант решения задания). Далее исследовать другие структуры, в том числе доступные в модуле collections в качестве контейнеров для хранения структуры бинарного дерева.
+## Разработка клиент-серверного приложения на Python с использованием MVC и Jinja2
 
-root = 11, height = 3, left_leaf = root ^ 2, right_leaf = 2 + root ^ 2
+Выполнил: Шарманов Даниил
 
-## Описание работы кода
+Группа: ИВТ 1-1
 
-1. Функция gen_bin_tree  
-Генерирует бинарное дерево  
-Базовый случай рекурсии: если высота достигла 0, возвращаем None  
-Вычисляет значения для левого и правого потомков  
-Возвращает словарь: tree.  
+### 1. Цель работы
 
-2. Функция print_tree  
-На вход получает tree и indient - отступ в пробелах
-Базовый случай: если дерево пустое, ничего не делаем  
-Сначала выводит значение текущего узла с отступом
-Если есть поддеревья, вызывает функцию рекурсивно для каждого из них
+Создать простое клиент-серверное веб-приложение на языке Python без использования сторонних веб-фреймворков (Django, Flask).
 
-## Решение
-```Python
-from typing import Callable, Dict, Optional
+Основные задачи:
 
-def gen_bin_tree(
-        height: int = 3, 
-        root: float = 11,
-        left_val: Callable = lambda x: x**2,
-        right_val: Callable = lambda x: 2 + x ** 2
-) -> Optional[Dict]:
+- Освоить работу со стандартной библиотекой `http.server` и ручную маршрутизацию запросов.
     
-    if height < 0:
-        return None
+- Применить архитектурный паттерн **MVC (Model-View-Controller)** для структурирования кода.
     
-    tree = {
-        'root': root,
-        'left': None,
-        'right': None
-    }
+- Реализовать доменные модели с инкапсуляцией (геттеры/сеттеры).
+    
+- Использовать шаблонизатор **Jinja2** для генерации HTML-страниц.
+    
+- Реализовать получение данных о валютах (имитация API ЦБ) и отображение их пользователю.
+    
+- Написать модульные тесты (`unittest`) для проверки работоспособности системы.
+    
 
-    if height > 0:
-        left_value = left_val(root)
-        right_value = right_val(root)
-        tree['left'] = gen_bin_tree(height - 1, left_value, left_val, right_val)
-        tree['right'] = gen_bin_tree(height - 1, right_value, left_val, right_val)
+---
 
-    return tree
+### 2. Описание предметной области
 
+В ходе работы были реализованы следующие сущности (модели):
 
-def print_tree(tree, indent: int = 0):
-    """Рекурсивный вывод бинарного дерева в консоль."""
-    if tree is None:
-        return
+1. **Author** (Автор):
+    
+    - `name`: Имя автора.
+        
+    - `group`: Учебная группа.
+        
+2. **App** (Приложение):
+    
+    - `name`: Название приложения.
+        
+    - `version`: Версия.
+        
+    - `author`: Ссылка на объект `Author`.
+        
+3. **User** (Пользователь):
+    
+    - `id`: Уникальный идентификатор.
+        
+    - `name`: Имя пользователя.
+        
+4. **Currency** (Валюта):
+    
+    - `id`: Уникальный ID (например, "R01235").
+        
+    - `num_code`, `char_code`: Цифровой и символьный коды (USD, EUR).
+        
+    - `name`: Название валюты.
+        
+    - `value`: Текущий курс (обменное значение).
+        
+    - `nominal`: Номинал.
+        
+5. **UserCurrency** (Подписка):
+    
+    - Связующая сущность для реализации отношения «много-ко-многим» между пользователями и валютами. Хранит `user_id` и `currency_id`.
+        
 
-    print(" " * indent + f"├── {tree['root']}")
-    if tree['left'] is not None or tree['right'] is not None:
-        print_tree(tree['left'], indent + 4)
-        print_tree(tree['right'], indent + 4)
+---
 
+### 3. Структура проекта
 
-if __name__ == "__main__":
-    tree = gen_bin_tree()
-    print_tree(tree)
+Проект организован в соответствии с паттерном MVC. Файловая структура:
+
+Plaintext
+
 ```
-## Проверка
-Тесты реализованы с помощью модуля unittest.
-```Python
-import unittest
-from lr3 import gen_bin_tree
-
-class TestBinaryTree(unittest.TestCase):
-    def test_tree_1(self):
-        tree = gen_bin_tree(height=3, root=5)
-        self.assertEqual(tree['root'], 5)
-
-    def test_tree_2(self):
-        tree = gen_bin_tree(height=3, root=3)
-        self.assertEqual(tree['left']['root'], 9)  # 3^2 = 9
-
-    def test_tree_3(self):
-        tree = gen_bin_tree(height=3, root=4)
-        self.assertEqual(tree['right']['root'], 18)  # 2 + 4^2 = 18
-
-    def test_tree_4(self):
-        tree = gen_bin_tree(height=3, root=2)
-        self.assertEqual(tree['left']['left']['root'], 16)  # (2^2)^2 = 16
-    
-    def test_tree_5(self):
-        tree = gen_bin_tree(height=3, root=2)
-        self.assertEqual(tree['left']['right']['root'], 18)  # 2 + (2^2)^2 = 18
-    
-    def test_tree_6(self):
-        tree = gen_bin_tree(height=3, root=3)
-        self.assertEqual(tree['right']['left']['root'], 121)  # (2 + 3^2)^2 = 121
-    
-    def test_tree_7(self):
-        tree = gen_bin_tree(height=3, root=3)
-        self.assertEqual(tree['right']['right']['root'], 123)  # 2 + (2 + 3^2)^2 = 123
-
-if __name__ == "__main__":
-    unittest.main(argv=[''], verbosity=2, exit=False)
+lr7/
+├── myapp/
+│   ├── controllers/         # Логика обработки запросов (Controller)
+│   │   ├── author_controller.py
+│   │   ├── user_controller.py
+│   │   └── currencies_controller.py
+│   ├── models/              # Классы данных (Model)
+│   │   ├── author.py, user.py, currency.py...
+│   ├── templates/           # HTML-шаблоны Jinja2 (View)
+│   │   ├── layout.html, index.html, users.html...
+│   ├── utils/               # Вспомогательные модули
+│   │   └── currencies_api.py
+│   └── myapp.py             # Точка входа (Запуск сервера)
+└── tests/                   # Модульные тесты
+    ├── test_models.py
+    ├── test_api.py
+    └── test_routes_templates.py
 ```
+
+---
+
+### 4. Описание реализации
+
+#### Реализация моделей
+
+Модели реализованы как стандартные Python-классы. Для обеспечения валидации данных использованы декораторы @property (геттеры и сеттеры).
+
+Пример: В модели Currency сеттер value автоматически конвертирует строковое представление числа с запятой (формат XML: "48,61") в число с плавающей точкой (48.61) и выбрасывает исключение TypeError или ValueError при некорректных данных.
+
+#### Маршрутизация и обработка запросов
+
+Сервер реализован на базе `http.server.HTTPServer`.
+
+- Класс `MyRequestHandler` наследуется от `BaseHTTPRequestHandler`.
+    
+- Метод `do_GET` разбирает URL с помощью `urllib.parse`.
+    
+- Используется конструкция `if/elif` для определения маршрута (`/`, `/users`, `/currencies`) и вызова соответствующей функции из контроллеров.
+    
+
+#### Шаблонизатор Jinja2
+
+Инициализация окружения (`Environment`) происходит один раз при старте сервера в `myapp.py`:
+
+Python
+
+```
+template_path = os.path.join(current_dir, 'templates')
+env = Environment(
+    loader=FileSystemLoader(template_path),
+    autoescape=select_autoescape(['html', 'xml'])
+)
+```
+
+Использован `FileSystemLoader` для надежной загрузки шаблонов по абсолютному пути. Данные передаются в шаблон через метод `template.render(**context)`.
+
+#### Интеграция API курсов
+
+Функция `get_currencies` в `utils/currencies_api.py` имитирует работу с XML-ответом от ЦБ РФ.
+
+- Используется библиотека `xml.etree.ElementTree` для парсинга XML.
+    
+- Данные преобразуются в список объектов модели `Currency`.
+    
+
+---
+
+### 5. Примеры работы приложения
+
+1. Главная страница (/)
+
+Отображает информацию о приложении и авторе.
+[![image.png](https://i.postimg.cc/KY1SyYnS/image.png)](https://postimg.cc/4KRF6sLB)
+2. Список пользователей (/users)
+
+Выводит список доступных пользователей в виде ссылок.
+
+[![image.png](https://i.postimg.cc/DZccjr82/image.png)](https://postimg.cc/ZBC30y8g)
+
+3. Детальная страница пользователя (/user?id=1)
+
+Показывает имя пользователя и таблицу валют, на которые он подписан.
+
+[![image.png](https://i.postimg.cc/PrJMy8HM/image.png)](https://postimg.cc/QHL5xCHB)
+
+4. Курсы валют (/currencies)
+
+Таблица всех доступных валют с их номиналом и курсом.
+
+[![image.png](https://i.postimg.cc/JzyPrHdH/image.png)](https://postimg.cc/RWBcGhmv)
+
+---
+
+### 6. Тестирование
+
+Для проверки надежности кода были написаны unit-тесты с использованием библиотеки `unittest`.
+
+**Реализованные тесты:**
+
+1. **test_models.py**: Проверка создания объектов, работы геттеров/сеттеров и выброса исключений (`ValueError`, `TypeError`) при валидации.
+    
+2. **test_api.py**: Проверка функции парсинга XML (корректность возвращаемого списка).
+    
+3. **test_routes_templates.py**: Интеграционные тесты. Проверяют, что контроллеры возвращают правильный контекст, а шаблоны рендерят HTML, содержащий ожидаемые строки (например, имя пользователя).
+    
+
+Результаты тестирования:
+
+Все тесты пройдены успешно.
+
+[![image-2025-12-29-13-47-53.png](https://i.postimg.cc/7hxKwBjW/image-2025-12-29-13-47-53.png)](https://postimg.cc/mz5YSSLY)
+
+---
+
+### 7. Выводы
+
+В ходе лабораторной работы было успешно разработано клиент-серверное приложение на «чистом» Python.
+
+**Возникшие проблемы и их решение:**
+
+1. **Проблема импортов (`ModuleNotFoundError`):** При запуске приложения и тестов возникали ошибки видимости пакетов.
+    
+    - _Решение:_ Структура проекта была скорректирована, папка `tests` вынесена в корень. В `myapp.py` и тесты был добавлен код `sys.path.append(...)` для явного указания путей, а внутри файлов добавлены префиксы пакета (`from myapp.models...`).
+        
+2. **Загрузка шаблонов (`TemplateNotFound`):** `PackageLoader` не находил шаблоны при запуске скрипта напрямую.
+    
+    - _Решение:_ Заменен на `FileSystemLoader` с указанием абсолютного пути к папке `templates`.
+        
+
+Применение MVC:
+
+Архитектура позволила четко разделить код:
+
+- **Models** занимаются только данными и их валидацией.
+    
+- **Controllers** готовят данные, ничего не зная о HTML.
+    
+- **Views (Jinja2)** отображают информацию, не содержа бизнес-логики.
+    
+
+Работа позволила углубить знания о внутреннем устройстве веб-серверов, обработке HTTP-запросов и важности модульного тестирования для обеспечения стабильности приложения.
