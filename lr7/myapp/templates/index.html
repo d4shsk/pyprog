@@ -1,0 +1,5 @@
+{% extends "layout.html" %}
+{% block content %}
+    <p>Добро пожаловать в <strong>{{ app.name }}</strong> (v{{ app.version }}).</p>
+    <p>Разработчик: {{ author.name }} ({{ author.group }})</p>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>ID: {{ user.id }}</h2>
+    <h3>Подписки на валюты:</h3>
+    {% if subscriptions %}
+        <table>
+            <tr>
+                <th>Код</th>
+                <th>Валюта</th>
+                <th>Курс</th>
+            </tr>
+            {% for cur in subscriptions %}
+            <tr>
+                <td>{{ cur.char_code }}</td>
+                <td>{{ cur.name }}</td>
+                <td>{{ cur.value }} руб.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Нет активных подписок.</p>
+    {% endif %}
+{% endblock %}
